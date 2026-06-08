@@ -1,6 +1,25 @@
 # Desafio Skills — Refatoração Arquitetural Automatizada
 
-Repositório do desafio MBA IA: análise manual, skill `refactor-arch` e refatoração MVC nos 3 projetos legados do monorepo.
+Skill `refactor-arch` para analisar, auditar e refatorar APIs legadas para o padrão MVC. Implementada com **Claude Code** (`.claude/skills/refactor-arch/`) e testada nos 3 projetos do monorepo.
+
+## Estrutura do repositório
+
+```
+mba-ia-refactor-projects-skill/
+├── README.md
+├── code-smells-project/          # Projeto 1 — Python/Flask (E-commerce)
+│   └── .claude/skills/refactor-arch/
+├── ecommerce-api-legacy/         # Projeto 2 — Node.js/Express (LMS + checkout)
+│   └── .claude/skills/refactor-arch/
+├── task-manager-api/             # Projeto 3 — Python/Flask (Task Manager)
+│   └── .claude/skills/refactor-arch/
+└── reports/
+    ├── audit-project-1.md
+    ├── audit-project-2.md
+    └── audit-project-3.md
+```
+
+> A skill vive **dentro de cada projeto** (não na raiz do monorepo). Copie `.claude/skills/refactor-arch/` ao migrar para outro repositório.
 
 ---
 
@@ -94,11 +113,19 @@ Problemas identificados por leitura direta do código **antes** da skill. Detalh
 
 ## C) Resultados
 
-### Projeto 1 — code-smells-project
+### Resumo dos relatórios de auditoria
 
-**Relatório:** [`reports/audit-project-1.md`](reports/audit-project-1.md) — 10 findings (4 CRITICAL, 2 HIGH, 3 MEDIUM, 1 LOW)
+| Projeto | CRITICAL | HIGH | MEDIUM | LOW | Total |
+|---------|----------|------|--------|-----|-------|
+| code-smells-project | 4 | 2 | 3 | 1 | **10** |
+| ecommerce-api-legacy | 3 | 2 | 5 | 1 | **11** |
+| task-manager-api | 3 | 3 | 6 | 3 | **15** |
 
-**Antes → depois:**
+Relatórios completos: [`reports/audit-project-1.md`](reports/audit-project-1.md), [`reports/audit-project-2.md`](reports/audit-project-2.md), [`reports/audit-project-3.md`](reports/audit-project-3.md).
+
+### Comparação antes/depois
+
+**code-smells-project**
 
 ```
 Antes: app.py, controllers.py, models.py, database.py (monolito)
@@ -112,19 +139,7 @@ Depois:
   validators/produto_validator.py
 ```
 
-| Item | Status |
-|------|--------|
-| Fase 1 — stack correta (Python/Flask) | ✅ |
-| Fase 2 — ≥5 findings, CRITICAL/HIGH | ✅ |
-| Fase 2 — pausa antes da Fase 3 | ✅ |
-| Fase 3 — estrutura MVC | ✅ |
-| Fase 3 — app inicia e endpoints respondem | ✅ |
-
-### Projeto 2 — ecommerce-api-legacy
-
-**Relatório:** [`reports/audit-project-2.md`](reports/audit-project-2.md) — 11 findings (3 CRITICAL, 2 HIGH, 5 MEDIUM, 1 LOW)
-
-**Antes → depois:**
+**ecommerce-api-legacy**
 
 ```
 Antes: src/app.js, AppManager.js, utils.js
@@ -138,12 +153,136 @@ Depois:
   middlewares/error_handler.js
 ```
 
+**task-manager-api**
+
+```
+Antes: app.py + routes/ (handlers gordos) + models/ + services/
+Depois:
+  app.py + config/settings.py
+  controllers/{task,user,report}_controller.py
+  services/task_service.py (N+1 resolvido com joinedload)
+  routes/ (blueprints finos — só delegam)
+  middlewares/error_handler.py
+```
+
+### Logs de validação (smoke tests)
+
+```
+# code-smells-project (porta 5000 — desative AirPlay Receiver no macOS se ocupada)
+GET /health → 200 {"status":"ok","database":"connected",...}
+GET /produtos → 200 (lista de produtos)
+
+# task-manager-api (porta 5000, após seed.py — não rode junto com projeto 1)
+GET /health → 200 {"status":"ok","timestamp":"..."}
+GET /tasks → 200 (10 tasks)
+
+# ecommerce-api-legacy (porta 3000)
+Boot → "Frankenstein LMS rodando na porta 3000..."
+POST /api/checkout → contrato preservado (api.http)
+```
+
+### Checklist de validação
+
+#### Projeto 1 — code-smells-project
+
+| Item | Status |
+|------|--------|
+| Fase 1 — stack correta (Python/Flask) | ✅ |
+| Fase 2 — ≥5 findings, CRITICAL/HIGH | ✅ (10 findings, 4 CRITICAL) |
+| Fase 2 — pausa antes da Fase 3 | ✅ |
+| Fase 3 — estrutura MVC | ✅ |
+| Fase 3 — app inicia e endpoints respondem | ✅ |
+
+#### Projeto 2 — ecommerce-api-legacy
+
 | Item | Status |
 |------|--------|
 | Fase 1 — stack correta (Node/Express) | ✅ |
-| Fase 2 — ≥5 findings, CRITICAL/HIGH | ✅ |
+| Fase 2 — ≥5 findings, CRITICAL/HIGH | ✅ (11 findings, 3 CRITICAL) |
 | Fase 2 — pausa antes da Fase 3 | ✅ |
 | Fase 3 — estrutura MVC | ✅ |
 | Fase 3 — app inicia e checkout funciona | ✅ |
 
+#### Projeto 3 — task-manager-api
+
+| Item | Status |
+|------|--------|
+| Fase 1 — Python/Flask + domínio Task Manager | ✅ |
+| Fase 2 — ≥5 findings em projeto parcial | ✅ (15 findings) |
+| Fase 2 — pausa antes da Fase 3 | ✅ |
+| Fase 3 — melhora estrutura sem quebrar API | ✅ |
+| Fase 3 — endpoints respondem após refatoração | ✅ |
+
+### Critérios de aceite
+
+| Critério | P1 | P2 | P3 |
+|----------|----|----|-----|
+| Fase 1 detecta stack | ✅ | ✅ | ✅ |
+| Fase 2 ≥ 5 findings | ✅ | ✅ | ✅ |
+| Fase 2 ≥ 1 CRITICAL/HIGH | ✅ | ✅ | ✅ |
+| Fase 3 app funciona | ✅ | ✅ | ✅ |
+
 ---
+
+## D) Como Executar
+
+### Pré-requisitos
+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) instalado e autenticado
+- Python 3.10+ (`python3`, `pip`)
+- Node.js 18+ (`node`, `npm`)
+
+### Projeto 1 — code-smells-project
+
+```bash
+cd code-smells-project
+pip install -r requirements.txt
+claude "/refactor-arch"
+# Após Fase 2, confirmar com y para refatorar
+python3 app.py
+# Validar com api.http ou curl http://localhost:5000/health
+```
+
+### Projeto 2 — ecommerce-api-legacy
+
+```bash
+cd ecommerce-api-legacy
+npm install
+claude "/refactor-arch"
+npm start
+# Validar com api.http (porta 3000)
+```
+
+### Projeto 3 — task-manager-api
+
+```bash
+cd task-manager-api
+pip install -r requirements.txt
+python3 seed.py          # obrigatório no primeiro boot
+claude "/refactor-arch"
+python3 app.py
+# Validar com api.http (porta 5000 — não rode junto com projeto 1)
+```
+
+### Salvar relatório de auditoria
+
+Após a Fase 2, copie a saída do relatório para:
+
+- `reports/audit-project-1.md` (code-smells-project)
+- `reports/audit-project-2.md` (ecommerce-api-legacy)
+- `reports/audit-project-3.md` (task-manager-api)
+
+### Validar refatoração
+
+1. Aplicação inicia sem traceback
+2. `GET /health` (ou equivalente) retorna 200
+3. Endpoints principais do `api.http` respondem com o mesmo contrato JSON
+4. Estrutura de pastas segue `mvc-target-guidelines.md` da skill
+
+---
+
+## Referências
+
+- [Claude Code: Skills](https://docs.anthropic.com/en/docs/claude-code/skills)
+- [The Complete Guide to Building Skills for Claude (PDF)](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf)
+- [Equipping Agents for the Real World with Agent Skills](https://claude.com/blog/equipping-agents-for-the-real-world-with-agent-skills)

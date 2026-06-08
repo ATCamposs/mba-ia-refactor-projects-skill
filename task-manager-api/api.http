@@ -1,0 +1,40 @@
+# Boot: pip install -r requirements.txt
+# Antes do primeiro boot: python seed.py
+# Depois: python app.py
+# Porta: http://localhost:5000
+# Projetos Flask no monorepo usam o mesmo padrão @baseUrl e separadores ###
+
+@baseUrl = http://localhost:5000
+
+### Health check
+GET {{baseUrl}}/health
+
+### Raiz da API
+GET {{baseUrl}}/
+
+### Listar tasks
+GET {{baseUrl}}/tasks
+
+### Buscar task por ID
+GET {{baseUrl}}/tasks/1
+
+### Login (seed: joao@email.com / 1234)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "password": "1234"
+}
+
+### Estatísticas de tasks
+GET {{baseUrl}}/tasks/stats
+
+### Listar usuários
+GET {{baseUrl}}/users
+
+### Relatório resumo
+GET {{baseUrl}}/reports/summary
+
+### Listar categorias
+GET {{baseUrl}}/categories

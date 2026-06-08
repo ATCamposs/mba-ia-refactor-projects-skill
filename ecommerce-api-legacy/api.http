@@ -1,3 +1,7 @@
+# Boot: npm install && npm start
+# Porta: http://localhost:3000
+# Projetos Flask do monorepo usam o mesmo padrão @baseUrl e separadores ### (porta 5000)
+
 @baseUrl = http://localhost:3000
 
 ### Checkout - sucesso

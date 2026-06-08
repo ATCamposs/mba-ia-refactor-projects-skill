@@ -120,4 +120,30 @@ Depois:
 | Fase 3 — estrutura MVC | ✅ |
 | Fase 3 — app inicia e endpoints respondem | ✅ |
 
+### Projeto 2 — ecommerce-api-legacy
+
+**Relatório:** [`reports/audit-project-2.md`](reports/audit-project-2.md) — 11 findings (3 CRITICAL, 2 HIGH, 5 MEDIUM, 1 LOW)
+
+**Antes → depois:**
+
+```
+Antes: src/app.js, AppManager.js, utils.js
+Depois:
+  src/app.js (composition root)
+  config/settings.js
+  models/{db,user,course,enrollment,payment,report,audit_log}_model.js
+  controllers/{checkout,admin,user}_controller.js
+  views/{checkout,admin,user}_routes.js
+  services/{cache,payment}_service.js
+  middlewares/error_handler.js
+```
+
+| Item | Status |
+|------|--------|
+| Fase 1 — stack correta (Node/Express) | ✅ |
+| Fase 2 — ≥5 findings, CRITICAL/HIGH | ✅ |
+| Fase 2 — pausa antes da Fase 3 | ✅ |
+| Fase 3 — estrutura MVC | ✅ |
+| Fase 3 — app inicia e checkout funciona | ✅ |
+
 ---

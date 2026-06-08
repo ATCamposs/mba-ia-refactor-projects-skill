@@ -43,3 +43,51 @@ Problemas identificados por leitura direta do código **antes** da skill. Detalh
 | 7 | **LOW** | Overdue duplicado | `routes/task_routes.py:30-39` vs `models/task.py:50-60` | Model tem `is_overdue()` mas rotas reimplementam inline. |
 
 ---
+
+## B) Construção da Skill
+
+### Decisões de design
+
+- **SKILL.md** como orquestrador com **Invocation Matrix**: cada fase carrega apenas os arquivos de referência necessários (análise → catálogo/template → guidelines/playbook/validação).
+- **6 arquivos de referência** em `references/`, cobrindo as 5 áreas obrigatórias:
+  - `analysis-heuristics.md` — detecção de stack e mapeamento arquitetural
+  - `anti-patterns-catalog.md` — 12 anti-patterns com severidade e sinais grep-acionáveis
+  - `audit-report-template.md` — formato padronizado da Fase 2
+  - `mvc-target-guidelines.md` — regras MVC alvo por stack
+  - `refactoring-playbook.md` — 10 transformações com exemplos antes/depois
+  - `phase3-validation.md` — smoke tests, portas, `seed.py`, checklist
+
+### Anti-patterns no catálogo (amostra)
+
+| Anti-pattern | Severidade | Por quê |
+|---|---|---|
+| SQL Injection por concatenação | CRITICAL | Presente no monolito Flask (`models.py`) |
+| Endpoint de SQL arbitrário | CRITICAL | Rota admin intencional — documentar, não remover às cegas |
+| Credenciais hardcoded | CRITICAL | Comum nos 3 projetos |
+| God Class / God Module | CRITICAL | `models.py` e `AppManager.js` |
+| Vazamento de segredos em HTTP | HIGH | Health check e `to_dict()` com senha |
+| Fat routes | HIGH | Express checkout e Flask task routes |
+| Estado global mutável | HIGH | `globalCache` no Express |
+| N+1 queries | MEDIUM | Pedidos, relatórios, tasks |
+| Callback hell | MEDIUM | Checkout Express com sqlite3 callbacks |
+| APIs deprecated (SQLAlchemy `Model.query.get`, hash DIY) | MEDIUM | task-manager e ecommerce |
+| Bare except | MEDIUM | task routes |
+| Duplicação / magic numbers | LOW | Validações e regras de desconto |
+
+### Agnosticismo de tecnologia
+
+- Heurísticas separadas por **markers de stack** (`requirements.txt` vs `package.json`, `Blueprint` vs `express.Router`).
+- Playbook com ramificações **Flask** e **Express** para o mesmo smell (ex.: God module → `models/` + `controllers/` + `views/`).
+- Fase 3 **stack-aware**: monolito vira MVC completo; projeto parcial (task-manager) ganha `controllers/` e `config/` sem reescrever models existentes.
+- Contratos de smoke preservados (`api.http`, campos JSON legados como `usr`/`eml`, MD5 no login do task-manager).
+
+### Desafios e soluções
+
+| Desafio | Solução |
+|---|---|
+| Smells intencionais de contrato (admin SQL, MD5, campos `password` no JSON) | Catálogo marca como CRITICAL/HIGH mas playbook diz **preservar** se `api.http`/seed dependem |
+| Dois Flask na porta 5000 | `phase3-validation.md` documenta testar um por vez |
+| Projeto 3 já organizado | Fase 3 extrai controllers/services em vez de recriar monolito |
+| Fase 2 obrigatória com pausa | SKILL.md proíbe mutação até confirmação humana `[y/n]` |
+
+---

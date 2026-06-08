@@ -91,3 +91,33 @@ Problemas identificados por leitura direta do código **antes** da skill. Detalh
 | Fase 2 obrigatória com pausa | SKILL.md proíbe mutação até confirmação humana `[y/n]` |
 
 ---
+
+## C) Resultados
+
+### Projeto 1 — code-smells-project
+
+**Relatório:** [`reports/audit-project-1.md`](reports/audit-project-1.md) — 10 findings (4 CRITICAL, 2 HIGH, 3 MEDIUM, 1 LOW)
+
+**Antes → depois:**
+
+```
+Antes: app.py, controllers.py, models.py, database.py (monolito)
+Depois:
+  app.py (composition root)
+  config/settings.py
+  models/{produto,usuario,pedido}_model.py
+  controllers/{produto,usuario,pedido,admin,health}_controller.py
+  views/routes.py
+  middlewares/error_handler.py
+  validators/produto_validator.py
+```
+
+| Item | Status |
+|------|--------|
+| Fase 1 — stack correta (Python/Flask) | ✅ |
+| Fase 2 — ≥5 findings, CRITICAL/HIGH | ✅ |
+| Fase 2 — pausa antes da Fase 3 | ✅ |
+| Fase 3 — estrutura MVC | ✅ |
+| Fase 3 — app inicia e endpoints respondem | ✅ |
+
+---

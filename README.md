@@ -48,6 +48,7 @@ Problemas identificados por leitura direta do código **antes** da skill. Detalh
 | 4 | **MEDIUM** | N+1 no relatório financeiro | `src/AppManager.js:89-127` | Callbacks aninhados com queries por curso/enrollment/pagamento. |
 | 5 | **MEDIUM** | Hash inseguro (`badCrypto`) | `src/utils.js:17-23` | Concatenação base64 — não é hash criptográfico. |
 | 6 | **LOW** | Nomenclatura críptica | `src/AppManager.js:29-33` | Variáveis de uma letra (`u`, `e`, `cc`) em fluxo de pagamento. |
+| 7 | **LOW** | Magic number no hash DIY | `src/utils.js:19` | Loop de `badCrypto` usa literal `10000` sem constante nomeada — obscurece intenção e dificulta ajustar o custo do algoritmo. |
 
 ### task-manager-api (Python/Flask — Task Manager)
 
